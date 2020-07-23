@@ -1,4 +1,4 @@
-package com.rockseven.test.data.model;
+package com.rockseven.test.repository.model;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;

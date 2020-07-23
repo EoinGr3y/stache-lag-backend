@@ -1,4 +1,4 @@
-package com.rockseven.test.data.model;
+package com.rockseven.test.repository.model;
 
 import org.springframework.data.annotation.Id;
 
