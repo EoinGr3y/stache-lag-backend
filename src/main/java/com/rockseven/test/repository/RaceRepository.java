@@ -8,8 +8,4 @@ import java.util.List;
 public interface RaceRepository extends MongoRepository<RaceData, String>, CustomRaceRepository {
 
   List<RaceData> findByRaceUrl(String raceUrl);
-
-  List<RaceData> getByTeamsName(String name);
-
-  List<RaceData> findByTeams_Positions_GpsAt(String time);
 }

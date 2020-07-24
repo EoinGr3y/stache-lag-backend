@@ -15,4 +15,7 @@ public interface RaceService {
     RaceData getRaceDataByName(String name);
 
     List<TeamsItem> getFilteredTeamDataByTimeMoment(String timeMoment, RaceData raceData);
+
+    List<TeamsItem> getFilteredTeamWithinFiveKilometers(List<TeamsItem> teamsFilteredByMoment, String teamName);
+
 }

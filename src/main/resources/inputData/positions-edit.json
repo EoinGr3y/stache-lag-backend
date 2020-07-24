@@ -790,7 +790,8 @@
     "marker": 217,
     "name": "Infinity",
     "serial": 6070
-  }, {
+  },
+    {
     "positions": [
       {
       "alert": false,
@@ -5893,7 +5894,7 @@
       "type": "automatic",
       "dtfKm": 3905.049,
       "id": 43920276,
-      "gpsAt": "2017-11-27T00:00:07Z",
+      "gpsAt":"2017-11-27T00:00:07Z",
       "sogKnots": 4.5,
       "battery": 88,
       "cog": 210,
