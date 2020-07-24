@@ -1,5 +1,6 @@
 package com.rockseven.test.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockseven.test.repository.RaceRepository;
 import com.rockseven.test.repository.model.Greeting;
 import com.rockseven.test.repository.model.RaceData;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,12 +26,13 @@ public class RaceController {
     @Autowired
     private RaceService raceService;
 
-    private static final String template = "Hello, %s!";
-    private final AtomicLong counter = new AtomicLong();
-
-    @GetMapping("/greeting")
-    public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return new Greeting(counter.incrementAndGet(), String.format(template, name));
+    @GetMapping("/loadFile")
+    public String loadFile() throws IOException {
+        this.raceRepository.deleteAll();
+        ObjectMapper objectMapper = new ObjectMapper();
+        RaceData raceData = objectMapper.readValue(new File("src/main/resources/inputData/positions.json"), RaceData.class);
+        this.raceRepository.save(raceData);
+        return "File loaded successfully";
     }
 
     @GetMapping("/visibleVesselsForMoment")
@@ -36,10 +40,6 @@ public class RaceController {
         RaceData raceData = raceRepository.findByRaceUrl("arc2017").get(0);
         List<TeamsItem> teamsFilteredByMoment = raceService.getFilteredTeamDataByTimeMoment(moment, raceData);
         log.info("Team data filtered by moment: {}", teamsFilteredByMoment);
-        if(teamsFilteredByMoment.stream().noneMatch(teamsItem -> teamsItem.getName().equals(teamName))) {
-            throw new InvalidDataException("No data for team name and moment selected");
-        }
-        List<TeamsItem> teamsWithinFiveKilometers = raceService.getFilteredTeamWithinFiveKilometers(teamsFilteredByMoment, teamName);
-        return teamsWithinFiveKilometers;
+        return raceService.getFilteredTeamWithinFiveKilometers(teamsFilteredByMoment, teamName);
     }
 }

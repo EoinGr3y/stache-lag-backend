@@ -1,16 +1,12 @@
 package com.rockseven.test.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rockseven.test.repository.RaceRepository;
+import com.rockseven.test.controller.InvalidDataException;
 import com.rockseven.test.repository.model.PositionsItem;
 import com.rockseven.test.repository.model.RaceData;
 import com.rockseven.test.repository.model.TeamsItem;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,27 +14,10 @@ import java.util.stream.Collectors;
 @Service
 public class RaceServiceImpl implements RaceService {
 
-    @Autowired
-    private RaceRepository repository;
-
     @Override
-    public void writeFileDataToDatabase(String filepath) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        repository.deleteAll();
-
-        RaceData raceData = objectMapper.readValue(new File(filepath), RaceData.class);
-        repository.save(raceData);
-    }
-
-    @Override
-    public RaceData getRaceDataByName(String name) {
-        return repository.findByRaceUrl(name).get(0);
-    }
-
-    @Override
-    public List<TeamsItem> getFilteredTeamDataByTimeMoment(String timeMoment, RaceData raceData) {
+    public List<TeamsItem> getFilteredTeamDataByTimeMoment(String timeMoment, RaceData raceData) throws InvalidDataException {
         log.info("Getting filtered team data for moment: {}", timeMoment);
-        return raceData.getTeams().stream()
+        List<TeamsItem> filteredTeams = raceData.getTeams().stream()
                 .filter(teamsItem -> teamsItem.getPositions().stream()
                         .anyMatch(positionsItem -> positionsItem.getGpsAt().equals(timeMoment)))
                 .peek(teamsItem -> {
@@ -47,11 +26,18 @@ public class RaceServiceImpl implements RaceService {
                     teamsItem.setPositions(filteredPositionItems);
                 })
                 .collect(Collectors.toList());
+        if(!(filteredTeams.size() >= 1)) {
+            throw new InvalidDataException("No team data for given moment.");
+        }
+        return filteredTeams;
     }
 
     @Override
-    public List<TeamsItem> getFilteredTeamWithinFiveKilometers(List<TeamsItem> teamsFilteredByMoment, String teamName) {
+    public List<TeamsItem> getFilteredTeamWithinFiveKilometers(List<TeamsItem> teamsFilteredByMoment, String teamName) throws InvalidDataException {
         log.info("Getting teams within 5 kilometers of team: {}", teamName);
+        if(teamsFilteredByMoment.stream().noneMatch(teamsItem -> teamsItem.getName().equals(teamName))) {
+            throw new InvalidDataException("No data for team name and moment selected");
+        }
         TeamsItem currentTeam = teamsFilteredByMoment.stream().filter(teamsItem -> teamsItem.getName().equals(teamName)).findFirst().orElse(null);
         log.info("Current team: {}", currentTeam);
         List<TeamsItem> teamsWithinFiveKilometers = teamsFilteredByMoment.stream().filter(teamsItem -> {

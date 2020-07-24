@@ -1,25 +1,15 @@
 package com.rockseven.test;
 
-import com.rockseven.test.repository.model.TeamsItem;
-import com.rockseven.test.service.RaceService;
-
-import com.rockseven.test.repository.model.RaceData;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-import java.util.List;
-
 @Slf4j
 @SpringBootApplication
 @EnableMongoRepositories(basePackages = "com.rockseven.test")
 public class StacheLagApplication implements CommandLineRunner {
-
-    @Autowired
-    private RaceService raceService;
 
     public static void main(String[] args) {
         SpringApplication.run(StacheLagApplication.class, args);
@@ -27,17 +17,6 @@ public class StacheLagApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-
-        raceService.writeFileDataToDatabase("src/main/resources/inputData/positions.json");
-        RaceData raceData = raceService.getRaceDataByName("arc2017");
-
-        log.debug("Race Data Entry for arc2017: {}", raceData);
-        log.info("Number of teams: {}", raceData.getTeams().size());
-
-        List<TeamsItem> filteredTeams = raceService.getFilteredTeamDataByTimeMoment("2017-12-07T12:00:00Z", raceData);
-
-        log.info("Number of filtered Teams: {}", filteredTeams.size());
-        log.info("Number of filtered Teams positions: {}", filteredTeams.get(0).getPositions().size());
     }
 
 }
