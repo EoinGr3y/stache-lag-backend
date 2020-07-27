@@ -45,25 +45,23 @@ public class RaceServiceImplTest {
 
     @Test
     public void whenValidTimeMoment_thenFilterTeamDataByTimeMoment() throws InvalidDataException {
-        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment("2017-11-21T08:00:04Z", this.raceData);
-        assertEquals(2, filteredTeams.size());
+        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z");
+        assertEquals(3, filteredTeams.size());
     }
 
     @Test(expected = InvalidDataException.class)
     public void whenInvalidMoment_thenInvalidDataException() throws InvalidDataException {
-        this.raceService.getFilteredTeamDataByTimeMoment("incorrectTimeMoment", this.raceData);
+        this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "incorrectTimeMoment");
     }
 
     @Test
     public void whenValidTimeMomentAndTeamName_thenFindTeamsWithinFiveKilometers() throws InvalidDataException {
-        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment("2017-11-21T08:00:04Z", this.raceData);
-        List<TeamsItem> teamsWithinFiveKilometers = this.raceService.getFilteredTeamWithinFiveKilometers(filteredTeams, "Infinity");
+        List<TeamsItem> teamsWithinFiveKilometers = this.raceService.getTeamsWithinFiveKilometersAtMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z", "Infinity");
         assertEquals(1, teamsWithinFiveKilometers.size());
     }
 
     @Test(expected = InvalidDataException.class)
     public void whenInvalidTeamName_thenInvalidDataException() throws InvalidDataException {
-        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment("2017-11-21T08:00:04Z", this.raceData);
-        this.raceService.getFilteredTeamWithinFiveKilometers(filteredTeams, "fakeTeam");
+        this.raceService.getTeamsWithinFiveKilometersAtMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z", "fakeTeam");
     }
 }

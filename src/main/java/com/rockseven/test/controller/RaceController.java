@@ -2,7 +2,6 @@ package com.rockseven.test.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rockseven.test.repository.RaceRepository;
-import com.rockseven.test.repository.model.Greeting;
 import com.rockseven.test.repository.model.RaceData;
 import com.rockseven.test.repository.model.TeamsItem;
 import com.rockseven.test.service.RaceService;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -38,8 +37,12 @@ public class RaceController {
     @GetMapping("/visibleVesselsForMoment")
     public List<TeamsItem> getVisibleVesselsForMoment(@RequestParam(value = "teamName")String teamName, @RequestParam(value = "moment")String moment) throws InvalidDataException {
         RaceData raceData = raceRepository.findByRaceUrl("arc2017").get(0);
-        List<TeamsItem> teamsFilteredByMoment = raceService.getFilteredTeamDataByTimeMoment(moment, raceData);
-        log.info("Team data filtered by moment: {}", teamsFilteredByMoment);
-        return raceService.getFilteredTeamWithinFiveKilometers(teamsFilteredByMoment, teamName);
+        return raceService.getTeamsWithinFiveKilometersAtMoment(raceData.getTeams(), moment, teamName);
+    }
+
+    @GetMapping("/getAverageSightingsPerDay")
+    public Map<String, List<TeamsItem>> getAverageSightingsPerDay(@RequestParam(value = "moment")String day) throws InvalidDataException {
+        RaceData raceData = raceRepository.findByRaceUrl("arc2017").get(0);
+        return raceService.getAverageNumberOfSightingsPerDay(raceData.getTeams(), day);
     }
 }
