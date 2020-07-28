@@ -20,39 +20,22 @@ import java.util.stream.Collectors;
 public class RaceServiceImpl implements RaceService {
 
     @Override
-    public List<TeamsItem> getFilteredTeamDataByTimeMoment(List<TeamsItem> teamsItems, String moment) throws InvalidDataException {
-        log.info("Getting filtered team data for moment: {}", moment);
-        List<TeamsItem> filteredTeams = teamsItems.stream()
-                .filter(teamsItem -> teamsItem.getPositions().stream()
-                        .anyMatch(positionsItem -> positionsItem.getGpsAt().startsWith(moment)))
-                .peek(teamsItem -> {
-                    List<PositionsItem> filteredPositionItems = teamsItem.getPositions().stream()
-                            .filter(positionsItem -> positionsItem.getGpsAt().startsWith(moment)).collect(Collectors.toList());
-                    teamsItem.setPositions(filteredPositionItems);
-                })
-                .collect(Collectors.toList());
-        if (!(filteredTeams.size() >= 1)) {
-            throw new InvalidDataException("No team data for given moment.");
-        }
-        return filteredTeams;
-    }
-
-    @Override
     public List<TeamsItem> getTeamsWithinFiveKilometersAtMoment(List<TeamsItem> teamsItems, String moment, String teamName) throws InvalidDataException {
-        log.info("Getting teams within 5 kilometers of team: {}", teamName);
-        String momentRoundedToMinute = moment.substring(0, moment.length() - 3);
-        List<TeamsItem> teamsFilteredOnMoment = getFilteredTeamDataByTimeMoment(teamsItems, momentRoundedToMinute);
-        if (teamsFilteredOnMoment.stream().noneMatch(teamsItem -> teamsItem.getName().equals(teamName))) {
-            throw new InvalidDataException("No data for team name and moment selected");
+        log.info("Getting teams within 5 kilometers of team: {} at moment: {}", teamName, moment);
+        //Rounding moment to ~10s as not all team position data lines up to the second.
+        String roundedMoment = moment.substring(0, moment.length() - 2);
+        List<TeamsItem> teamsFilteredOnMoment = getFilteredTeamDataByTimeMoment(teamsItems, roundedMoment);
+        TeamsItem currentTeam = teamsFilteredOnMoment.stream().filter(teamsItem -> teamsItem.getName().equals(teamName)).findFirst().orElse(null);
+        if (null == currentTeam) {
+            throw new InvalidDataException("No data for team: " + teamName + " at moment: " + moment);
         }
-        TeamsItem currentTeam = teamsItems.stream().filter(teamsItem -> teamsItem.getName().equals(teamName)).findFirst().orElse(null);
-        log.info("Current team: {}", currentTeam);
-        List<TeamsItem> teamsWithinFiveKilometers = teamsItems.stream().filter(teamsItem -> {
+        log.debug("Current team: {}", currentTeam);
+        List<TeamsItem> teamsWithinFiveKilometers = teamsFilteredOnMoment.stream().filter(teamsItem -> {
             double distanceFromCurrentVessel = calculateDistance(currentTeam.getPositions().get(0).getLatitude(), currentTeam.getPositions().get(0).getLongitude(),
                     teamsItem.getPositions().get(0).getLatitude(), teamsItem.getPositions().get(0).getLongitude());
             return ((distanceFromCurrentVessel > 0) && (distanceFromCurrentVessel <= 5.0));
         }).collect(Collectors.toList());
-        log.info("Teams within 5 kilometers: {}", teamsWithinFiveKilometers);
+        log.debug("Teams within 5 kilometers: {}", teamsWithinFiveKilometers);
         return teamsWithinFiveKilometers;
     }
 
@@ -63,20 +46,40 @@ public class RaceServiceImpl implements RaceService {
         Map<String, List<TeamsItem>> numberOfSightingsPerTeam = teamsFilteredOnDay.stream()
                 .peek(t -> log.info("Team name: {}", t.getName()))
                 .collect(Collectors.toMap(teamsItem -> teamsItem.getName() + "-" + teamsItem.getSerial(), teamsItem -> getAverageNumberOfSightingsPerDayForTeam(teamsFilteredOnDay, teamsItem, day)));
-        log.info("Map result: {}", numberOfSightingsPerTeam);
+        log.debug("Map result: {}", numberOfSightingsPerTeam);
         return numberOfSightingsPerTeam;
     }
 
+    private List<TeamsItem> getFilteredTeamDataByTimeMoment(List<TeamsItem> teamsItems, String moment) {
+        log.info("Getting filtered team data for moment: {}", moment);
+        List<TeamsItem> filteredTeams = teamsItems.stream()
+                .filter(teamsItem -> teamsItem.getPositions().stream()
+                        .anyMatch(positionsItem -> positionsItem.getGpsAt().startsWith(moment)))
+                .map(teamsItem -> {
+                    List<PositionsItem> filteredPositionItems = teamsItem.getPositions().stream()
+                            .filter(positionsItem -> positionsItem.getGpsAt().startsWith(moment)).collect(Collectors.toList());
+                    TeamsItem filteredTeamsItem = new TeamsItem(teamsItem);
+                    filteredTeamsItem.setPositions(filteredPositionItems);
+                    return filteredTeamsItem;
+                })
+                .collect(Collectors.toList());
+        if (!(filteredTeams.size() >= 1)) {
+            log.info("No team data at moment: {}", moment);
+        }
+        return filteredTeams;
+    }
+
     private List<TeamsItem> getAverageNumberOfSightingsPerDayForTeam(List<TeamsItem> teamsFilteredOnDay, TeamsItem teamsItem, String day) {
-        log.info("Getting average number of sightings for team {} on day {}", teamsItem.getName(), day);
+        log.info("Getting average number of sightings for team: {} on day: {}", teamsItem.getName(), day);
         List<TeamsItem> totalSightingsPerDay = new ArrayList<>();
         teamsItem.getPositions().forEach(positionsItem -> {
+            List<TeamsItem> teamsWithinFiveKilometersAtMoment = null;
             try {
-                List<TeamsItem> teamsWithinFiveKilometersAtMoment = getTeamsWithinFiveKilometersAtMoment(teamsFilteredOnDay, positionsItem.getGpsAt(), teamsItem.getName());
-                totalSightingsPerDay.addAll(teamsWithinFiveKilometersAtMoment);
+                teamsWithinFiveKilometersAtMoment = getTeamsWithinFiveKilometersAtMoment(teamsFilteredOnDay, positionsItem.getGpsAt(), teamsItem.getName());
             } catch (InvalidDataException e) {
                 e.printStackTrace();
             }
+            totalSightingsPerDay.addAll(teamsWithinFiveKilometersAtMoment);
         });
         return totalSightingsPerDay.stream().filter(distinctByKey(TeamsItem::getName)).collect(Collectors.toList());
     }

@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class UiController {
+public class RaceSummaryController {
 
     @Autowired
     private RaceRepository raceRepository;
     @Autowired
     private RaceService raceService;
 
-    @GetMapping("/visibleVesselsForMomentUi")
+    @GetMapping("/visibleVesselsForMomentSummary")
     public String getVisibleVesselsForMoment(@RequestParam(value = "teamName") String teamName,
                                              @RequestParam(value = "moment") String moment, Model model) throws InvalidDataException {
         RaceData raceData = raceRepository.findByRaceUrl("arc2017").get(0);
@@ -30,12 +30,20 @@ public class UiController {
         model.addAttribute("teamName", teamName);
         model.addAttribute("moment", moment);
         model.addAttribute("visibleTeams", visibleTeamsAtMoment);
-        return "visibleTeamsAtMoment";
+        return "visibleTeamsForMoment";
     }
 
-    @GetMapping("/getAverageSightingsPerDayUi")
-    public Map<String, List<TeamsItem>> getAverageSightingsPerDay(@RequestParam(value = "moment") String day) throws InvalidDataException {
+    @GetMapping("/averageVesselsPerDaySummary")
+    public String getAverageSightingsPerDay(@RequestParam(value = "day") String day, Model model) throws InvalidDataException {
         RaceData raceData = raceRepository.findByRaceUrl("arc2017").get(0);
-        return raceService.getAverageNumberOfSightingsPerDay(raceData.getTeams(), day);
+        Map<String, List<TeamsItem>> averageSightingsPerDay = raceService.getAverageNumberOfSightingsPerDay(raceData.getTeams(), day);
+        float totalSightings = 0;
+        for(List<TeamsItem> sightings: averageSightingsPerDay.values()) {
+            totalSightings += sightings.size();
+        }
+        model.addAttribute("day", day);
+        model.addAttribute("averageSightingsPerDay", averageSightingsPerDay);
+        model.addAttribute("totalAverage", Math.round(totalSightings / averageSightingsPerDay.size()));
+        return "averageSightingsPerDay";
     }
 }

@@ -10,8 +10,6 @@ import java.util.Map;
 @Service
 public interface RaceService {
 
-    List<TeamsItem> getFilteredTeamDataByTimeMoment(List<TeamsItem> teamsItems, String moment) throws InvalidDataException;
-
     List<TeamsItem> getTeamsWithinFiveKilometersAtMoment(List<TeamsItem> teamsFilteredByMoment, String moment, String teamName) throws InvalidDataException;
 
     Map<String, List<TeamsItem>> getAverageNumberOfSightingsPerDay(List<TeamsItem> teamsItems, String day) throws InvalidDataException;

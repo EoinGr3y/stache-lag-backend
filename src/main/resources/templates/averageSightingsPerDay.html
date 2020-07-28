@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link th:href="@{/styles/main.css}" rel="stylesheet" />
+</head>
+<body>
+<h2 th:text="${'Average sightings for day: ' + day}"></h2>
+<table>
+    <tr>
+        <th>Team Name</th>
+        <th>Average Number of Sightings</th>
+    </tr>
+    <tr th:each="team : ${averageSightingsPerDay}">
+        <td th:text="${team.key}">teamName</td>
+        <td th:text="${team.value.size()}">Number of sightings for day</td>
+    </tr>
+    <tr>
+        <th>Average of all vessels</th>
+        <th th:text="${totalAverage}">Total Average of all vessels</th>
+    </tr>
+</table>
+</body>
+</html>

@@ -22,4 +22,11 @@ public class TeamsItem{
 
     @JsonProperty("positions")
     private List<PositionsItem> positions;
+
+    public TeamsItem(TeamsItem teamsItem) {
+        this.serial = teamsItem.serial;
+        this.marker = teamsItem.serial;
+        this.name = teamsItem.name;
+        this.positions = teamsItem.positions;
+    }
 }

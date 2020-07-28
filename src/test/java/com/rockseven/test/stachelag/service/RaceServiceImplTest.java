@@ -17,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,24 +45,20 @@ public class RaceServiceImplTest {
     }
 
     @Test
-    public void whenValidTimeMoment_thenFilterTeamDataByTimeMoment() throws InvalidDataException {
-        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "2017-11-21T08:00:");
-        assertEquals(3, filteredTeams.size());
-    }
-
-    @Test(expected = InvalidDataException.class)
-    public void whenInvalidMoment_thenInvalidDataException() throws InvalidDataException {
-        this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "incorrectTimeMoment");
-    }
-
-    @Test
-    public void whenValidTimeMomentAndTeamName_thenFindTeamsWithinFiveKilometers() throws InvalidDataException {
-        List<TeamsItem> teamsWithinFiveKilometers = this.raceService.getTeamsWithinFiveKilometersAtMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z", "Infinity");
-        assertEquals(1, teamsWithinFiveKilometers.size());
+    public void whenValidTimeMomentAndTeamName_thenGetTeamsWithinFiveKilometers() throws InvalidDataException {
+        List<TeamsItem> teamsWithinFiveKilometers = this.raceService.getTeamsWithinFiveKilometersAtMoment(this.raceData.getTeams(), "2017-11-19T19:00:00Z", "Vahine");
+        assertEquals(2, teamsWithinFiveKilometers.size());
     }
 
     @Test(expected = InvalidDataException.class)
     public void whenInvalidTeamName_thenInvalidDataException() throws InvalidDataException {
         this.raceService.getTeamsWithinFiveKilometersAtMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z", "fakeTeam");
+    }
+
+    @Test
+    public void whenValidDay_thenGetAverageSightings() throws InvalidDataException {
+        Map<String, List<TeamsItem>> averageNumberOfSightingsPerDay = this.raceService.getAverageNumberOfSightingsPerDay(this.raceData.getTeams(), "2017-11-19");
+        assertEquals(5, averageNumberOfSightingsPerDay.size());
+        assertEquals(4, averageNumberOfSightingsPerDay.get("Clare-3192").size());
     }
 }
