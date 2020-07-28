@@ -21,6 +21,7 @@ Sample request urls;
 Assumptions
 -
 - Visibility of 5km
+- Moments for visibility checks are rounded to the nearest 10seconds as not all teams log position data at the exact same second moment. 
 
 Enhancements
 -
