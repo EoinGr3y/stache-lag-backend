@@ -1,7 +1,7 @@
 package com.rockseven.test.stachelag.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rockseven.test.repository.model.InvalidDataException;
+import com.rockseven.test.exception.InvalidDataException;
 import com.rockseven.test.repository.model.RaceData;
 import com.rockseven.test.repository.model.TeamsItem;
 import com.rockseven.test.service.RaceService;

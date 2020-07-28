@@ -1,6 +1,6 @@
 package com.rockseven.test.service;
 
-import com.rockseven.test.repository.model.InvalidDataException;
+import com.rockseven.test.exception.InvalidDataException;
 import com.rockseven.test.repository.model.PositionsItem;
 import com.rockseven.test.repository.model.TeamsItem;
 import lombok.extern.slf4j.Slf4j;
