@@ -1,6 +1,6 @@
 package com.rockseven.test.service;
 
-import com.rockseven.test.controller.InvalidDataException;
+import com.rockseven.test.repository.model.InvalidDataException;
 import com.rockseven.test.repository.model.PositionsItem;
 import com.rockseven.test.repository.model.TeamsItem;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +24,10 @@ public class RaceServiceImpl implements RaceService {
         log.info("Getting filtered team data for moment: {}", moment);
         List<TeamsItem> filteredTeams = teamsItems.stream()
                 .filter(teamsItem -> teamsItem.getPositions().stream()
-                        .anyMatch(positionsItem -> positionsItem.getGpsAt().equals(moment)))
+                        .anyMatch(positionsItem -> positionsItem.getGpsAt().startsWith(moment)))
                 .peek(teamsItem -> {
                     List<PositionsItem> filteredPositionItems = teamsItem.getPositions().stream()
-                            .filter(positionsItem -> positionsItem.getGpsAt().equals(moment)).collect(Collectors.toList());
+                            .filter(positionsItem -> positionsItem.getGpsAt().startsWith(moment)).collect(Collectors.toList());
                     teamsItem.setPositions(filteredPositionItems);
                 })
                 .collect(Collectors.toList());
@@ -40,7 +40,8 @@ public class RaceServiceImpl implements RaceService {
     @Override
     public List<TeamsItem> getTeamsWithinFiveKilometersAtMoment(List<TeamsItem> teamsItems, String moment, String teamName) throws InvalidDataException {
         log.info("Getting teams within 5 kilometers of team: {}", teamName);
-        List<TeamsItem> teamsFilteredOnMoment = getFilteredTeamDataByTimeMoment(teamsItems, moment);
+        String momentRoundedToMinute = moment.substring(0, moment.length() - 3);
+        List<TeamsItem> teamsFilteredOnMoment = getFilteredTeamDataByTimeMoment(teamsItems, momentRoundedToMinute);
         if (teamsFilteredOnMoment.stream().noneMatch(teamsItem -> teamsItem.getName().equals(teamName))) {
             throw new InvalidDataException("No data for team name and moment selected");
         }
@@ -58,7 +59,7 @@ public class RaceServiceImpl implements RaceService {
     @Override
     public Map<String, List<TeamsItem>> getAverageNumberOfSightingsPerDay(List<TeamsItem> teamsItems, String day) throws InvalidDataException {
         log.info("Getting average number of sightings on day: {}", day);
-        List<TeamsItem> teamsFilteredOnDay = getFilteredTeamDataByDay(teamsItems, day);
+        List<TeamsItem> teamsFilteredOnDay = getFilteredTeamDataByTimeMoment(teamsItems, day);
         Map<String, List<TeamsItem>> numberOfSightingsPerTeam = teamsFilteredOnDay.stream()
                 .peek(t -> log.info("Team name: {}", t.getName()))
                 .collect(Collectors.toMap(teamsItem -> teamsItem.getName() + "-" + teamsItem.getSerial(), teamsItem -> getAverageNumberOfSightingsPerDayForTeam(teamsFilteredOnDay, teamsItem, day)));
@@ -77,25 +78,7 @@ public class RaceServiceImpl implements RaceService {
                 e.printStackTrace();
             }
         });
-        List<TeamsItem> uniqueTotalSightingsPerDay = totalSightingsPerDay.stream().filter(distinctByKey(TeamsItem::getName)).collect(Collectors.toList());
-        return uniqueTotalSightingsPerDay;
-    }
-
-    private List<TeamsItem> getFilteredTeamDataByDay(List<TeamsItem> teamsItems, String day) throws InvalidDataException {
-        log.info("Getting filtered team data for day: {}", day);
-        List<TeamsItem> filteredTeams = teamsItems.stream()
-                .filter(teamsItem -> teamsItem.getPositions().stream()
-                        .anyMatch(positionsItem -> positionsItem.getGpsAt().startsWith(day)))
-                .peek(teamsItem -> {
-                    List<PositionsItem> filteredPositionItems = teamsItem.getPositions().stream()
-                            .filter(positionsItem -> positionsItem.getGpsAt().startsWith(day)).collect(Collectors.toList());
-                    teamsItem.setPositions(filteredPositionItems);
-                })
-                .collect(Collectors.toList());
-        if (!(filteredTeams.size() >= 1)) {
-            throw new InvalidDataException("No team data for given day.");
-        }
-        return filteredTeams;
+        return totalSightingsPerDay.stream().filter(distinctByKey(TeamsItem::getName)).collect(Collectors.toList());
     }
 
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {

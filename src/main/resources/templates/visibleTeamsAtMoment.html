@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link th:href="@{/styles/main.css}" rel="stylesheet" />
+</head>
+<body>
+<table>
+    <tr>
+        <th>Team Name</th>
+        <th>Moment</th>
+        <th>Number of visible teams</th>
+    </tr>
+    <tr>
+        <td th:text="${teamName}">1</td>
+        <td th:text="${moment}">1</td>
+        <td th:text="${visibleTeams.size()}">1</td>
+    </tr>
+</table>
+</body>
+</html>

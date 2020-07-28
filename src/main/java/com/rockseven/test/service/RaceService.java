@@ -1,6 +1,6 @@
 package com.rockseven.test.service;
 
-import com.rockseven.test.controller.InvalidDataException;
+import com.rockseven.test.repository.model.InvalidDataException;
 import com.rockseven.test.repository.model.TeamsItem;
 import org.springframework.stereotype.Service;
 

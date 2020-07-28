@@ -1,7 +1,7 @@
 package com.rockseven.test.stachelag.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rockseven.test.controller.InvalidDataException;
+import com.rockseven.test.repository.model.InvalidDataException;
 import com.rockseven.test.repository.model.RaceData;
 import com.rockseven.test.repository.model.TeamsItem;
 import com.rockseven.test.service.RaceService;
@@ -45,7 +45,7 @@ public class RaceServiceImplTest {
 
     @Test
     public void whenValidTimeMoment_thenFilterTeamDataByTimeMoment() throws InvalidDataException {
-        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "2017-11-21T08:00:04Z");
+        List<TeamsItem> filteredTeams = this.raceService.getFilteredTeamDataByTimeMoment(this.raceData.getTeams(), "2017-11-21T08:00:");
         assertEquals(3, filteredTeams.size());
     }
 
